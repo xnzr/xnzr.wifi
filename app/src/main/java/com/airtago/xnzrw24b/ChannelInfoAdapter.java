@@ -45,7 +45,8 @@ public class ChannelInfoAdapter extends RecyclerView.Adapter<ChannelInfoAdapter.
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mChannel.setText("Channel=" + Integer.toString(mValues.get(position).Channel, 10));
-        holder.mRssi.setText(String.format("Rssi1=%.2f", mValues.get(position).AvgRssi()));
+        holder.mRssi1.setText(String.format("Rssi1=%.2f", mValues.get(position).AvgRssi1()));
+        holder.mRssi2.setText(String.format("Rssi2=%.2f", mValues.get(position).AvgRssi2()));
 
         if(mSelectedPosition == position) {
             // Here I am just highlighting the background
@@ -63,14 +64,16 @@ public class ChannelInfoAdapter extends RecyclerView.Adapter<ChannelInfoAdapter.
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mChannel;
-        public final TextView mRssi;
+        public final TextView mRssi1;
+        public final TextView mRssi2;
         public ChannelInfo mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
             mChannel = (TextView) view.findViewById(R.id.row_channel);
-            mRssi = (TextView) view.findViewById(R.id.row_rssi);
+            mRssi1 = (TextView) view.findViewById(R.id.row_rssi1);
+            mRssi2 = (TextView) view.findViewById(R.id.row_rssi2);
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -91,7 +94,7 @@ public class ChannelInfoAdapter extends RecyclerView.Adapter<ChannelInfoAdapter.
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mChannel.getText() + " " + mRssi.getText() + "'";
+            return super.toString() + " '" + mChannel.getText() + " " + mRssi1.getText() + ":" + mRssi2.getText() + "'";
         }
     }
 }

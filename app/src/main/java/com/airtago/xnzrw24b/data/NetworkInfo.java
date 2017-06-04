@@ -48,7 +48,10 @@ public final class NetworkInfo {
             Channels.add(chan);
             result = true;
         }
-        chan.AddRssi(packet.power, packet.diff);
+        if (packet.antIdx == 0)
+            chan.AddRssi1(packet.power);
+        else if (packet.antIdx == 1)
+            chan.AddRssi2(packet.power);
         return result;
     }
 }

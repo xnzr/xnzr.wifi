@@ -150,6 +150,13 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
         while (!inited && !Thread.currentThread().isInterrupted()) {
             try {
                 port.init();
+                //sending to enable old protocol CODE=2122239
+                String cmd = "$2122239";
+                byte[] cmdBytes = new byte[cmd.length()];
+                for (int i = 0; i < cmd.length(); ++i) {
+                    cmdBytes[i] = (byte)cmd.charAt(i);
+                }
+                port.write(cmdBytes, READ_TIMEOUT_MS);
                 sendInfo("Device init OK");
                 inited = true;
                 changeState(STATE_READING);
@@ -165,6 +172,8 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
                 sendError("Device was not found");
             } catch (DeviceOpenFailedException e) {
                 sendError("Device init error. Check Permissions.");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             if (!inited) {
@@ -204,7 +213,7 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
         int read = 0;
         try {
             read = port.read(buf, READ_TIMEOUT_MS);
-            //Log.d( TAG, "Read " + read );
+            Log.d( TAG, "Read " + buf );
 
 
             wfCreator.putData(buf, read);
@@ -320,9 +329,9 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
         message.getData().putString(MessageFields.FIELD_SSID_STR, packet.apName);
         message.getData().putString(MessageFields.FIELD_MAC_STR, packet.mac);
         message.getData().putLong(MessageFields.FIELD_TIME_MS_LONG, packet.time);
+        message.getData().putInt(MessageFields.FIELD_ANT_INT, packet.antIdx);
         message.getData().putInt(MessageFields.FIELD_CH_INT, packet.wifiCh);
         message.getData().putDouble(MessageFields.FIELD_RSSI_DOUBLE, packet.power);
-        message.getData().putDouble(MessageFields.FIELD_DIFF_DOUBLE, packet.diff);
         message.getData().putString(MessageFields.FIELD_RAW_STR, packet.raw);
         //sendBroadcast(intent);
         handler.sendMessage(message);

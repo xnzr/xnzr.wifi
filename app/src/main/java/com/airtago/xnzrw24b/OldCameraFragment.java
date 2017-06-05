@@ -39,15 +39,22 @@ public class OldCameraFragment extends Fragment implements CameraFragmentInterfa
     private Camera camera;
     private OldCameraPreview cameraPreview;
     private AimView aimView;
+    private LevelBarView mLevelView;
+    private android.widget.FrameLayout mLayout;
 
     public void setLevel(double level) {
         aimView.setLevel(level);
         aimView.invalidate();
+        mLevelView.setSizes(mLayout.getMeasuredWidth(), mLayout.getMeasuredHeight());
+        mLevelView.setLevel(level);
+        mLevelView.invalidate();
     }
 
     public void clearRadius() {
         aimView.setRadius(0);
         aimView.invalidate();
+        mLevelView.Reset();
+        mLevelView.invalidate();
     }
 
     private Camera getCameraInstance() {
@@ -70,15 +77,17 @@ public class OldCameraFragment extends Fragment implements CameraFragmentInterfa
         camera = getCameraInstance();
         if (camera != null) {
             cameraPreview = new OldCameraPreview(getActivity(), camera);
-            View view = getActivity().findViewById(R.id.old_camera_preview);
-            android.widget.FrameLayout layout = (android.widget.FrameLayout) getActivity().findViewById(R.id.old_camera_preview);
-            layout.addView(cameraPreview);
+            mLayout = (android.widget.FrameLayout) getActivity().findViewById(R.id.old_camera_preview);
+            mLayout.addView(cameraPreview);
         }
 
         //Adding aim drawer
         RelativeLayout camLayout = (RelativeLayout)(getActivity().findViewById(R.id.oldCamLayout));
         aimView = new AimView(camLayout.getContext());
         camLayout.addView(aimView);
+
+        mLevelView = new LevelBarView(camLayout.getContext());
+        camLayout.addView(mLevelView);
     }
 
     @Override

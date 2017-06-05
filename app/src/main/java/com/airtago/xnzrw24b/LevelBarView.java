@@ -77,7 +77,11 @@ public class LevelBarView extends View {
 
     public void setLevel(double level) {
         mLevel = level;
-        mBarRelativeHeight = Math.abs(-100 - level) / 100d;
+        if (level > 0) {
+            mBarRelativeHeight = Math.abs(100 - level) / 100d;
+        } else {
+            mBarRelativeHeight = Math.abs(-100 - level) / 100d;
+        }
     }
 
     public void setSizes(int width, int height) {

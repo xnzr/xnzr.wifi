@@ -34,6 +34,12 @@ public class NetworkInfoFragment extends Fragment {
 
     private List<NetworkInfo> networks = new ArrayList<>();
     private NetworkInfoAdapter mAdapter;
+    private int mInitialSelection = -1;
+    private RecyclerView mRecyclerView;
+
+    public List<NetworkInfo> getNetworks() {
+        return networks;
+    }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
@@ -55,10 +61,36 @@ public class NetworkInfoFragment extends Fragment {
 
         if (networkInfo == null) {
             networkInfo = new NetworkInfo(packet);
-            networks.add(networkInfo);
-            mAdapter.notifyDataSetChanged();
+            addNetwork(networkInfo);
         }
         networkInfo.addChannel(packet);
+    }
+
+    public void addNetwork(NetworkInfo networkInfo) {
+        networks.add(networkInfo);
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void selectNetwork(NetworkInfo networkInfo) {
+        mInitialSelection = networks.indexOf(networkInfo);
+        if (mRecyclerView != null && mInitialSelection >= 0) {
+            doSelectItem();
+        }
+    }
+
+    private void doSelectItem() {
+        new android.os.Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RecyclerView.ViewHolder vh = mRecyclerView.findViewHolderForAdapterPosition(mInitialSelection);
+                if (vh != null && vh.itemView != null) {
+                    vh.itemView.performClick();
+                    mInitialSelection = -1;
+                }
+            }
+        },1);
     }
 
     @Override
@@ -78,10 +110,13 @@ public class NetworkInfoFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            mAdapter = new NetworkInfoAdapter(recyclerView, networks, mListener);
-            recyclerView.setAdapter(mAdapter);
+            mRecyclerView = (RecyclerView) view;
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mAdapter = new NetworkInfoAdapter(mRecyclerView, networks, mListener);
+            mRecyclerView.setAdapter(mAdapter);
+            if (mInitialSelection >= 0) {
+                doSelectItem();
+            }
         }
         return view;
     }

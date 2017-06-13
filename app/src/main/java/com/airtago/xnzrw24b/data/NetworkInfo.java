@@ -1,5 +1,6 @@
 package com.airtago.xnzrw24b.data;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.airtago.xnzrw24b.BeaconInfoData;
@@ -18,6 +19,8 @@ import static android.R.attr.x;
  */
 
 public final class NetworkInfo {
+    public NetworkInfo() { }
+
     public NetworkInfo(BeaconInfoData info) {
         Ssid = info.ssid;
         Mac = info.mac;
@@ -53,5 +56,29 @@ public final class NetworkInfo {
         else if (packet.antIdx == 1)
             chan.AddRssi2(packet.power);
         return result;
+    }
+
+    public void serialize(Bundle bundle) {
+        bundle.putString("mac", Mac);
+        bundle.putString("ssid", Ssid);
+        bundle.putInt("count", Channels.size());
+        int index = 0;
+        for (ChannelInfo ch: Channels) {
+            Bundle bch = new Bundle();
+            ch.serialize(bch);
+            bundle.putBundle("ch" + index++, bch);
+        }
+    }
+
+    public void deserialize(Bundle bundle) {
+        Mac = bundle.getString("mac");
+        Ssid = bundle.getString("ssid");
+        int count = bundle.getInt("count");
+        for (int i = 0; i < count; ++i) {
+            Bundle bch = bundle.getBundle("ch" + i);
+            ChannelInfo ch = new ChannelInfo(0);
+            ch.deserialize(bch);
+            Channels.add(ch);
+        }
     }
 }

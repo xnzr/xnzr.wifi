@@ -35,6 +35,8 @@ public class ChannelInfoFragment extends Fragment {
 
     private List<ChannelInfo> mChannels = new ArrayList<>();
     private ChannelInfoAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private int mInitialSelection;
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
@@ -47,12 +49,41 @@ public class ChannelInfoFragment extends Fragment {
     }
 
     public void setNetwork(NetworkInfo info) {
-        mAdapter.clearSelection();
+        if (mAdapter != null) {
+            mAdapter.clearSelection();
+        }
         mChannels.clear();
         for (ChannelInfo chan: info.Channels) {
             mChannels.add(chan);
         }
-        mAdapter.notifyDataSetChanged();
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+        public void selectChannel(int channel) {
+        for (int i = 0; i < mChannels.size(); ++i) {
+            if (mChannels.get(i).Channel == channel) {
+                mInitialSelection = i;
+                break;
+            }
+        }
+        if (mRecyclerView != null && mInitialSelection >= 0) {
+            doSelectItem();
+        }
+    }
+
+    private void doSelectItem() {
+        new android.os.Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RecyclerView.ViewHolder vh = mRecyclerView.findViewHolderForAdapterPosition(mInitialSelection);
+                if (vh != null && vh.itemView != null) {
+                    vh.itemView.performClick();
+                    mInitialSelection = -1;
+                }
+            }
+        },1);
     }
 
     public void addInfo(WFPacket packet) {
@@ -98,10 +129,13 @@ public class ChannelInfoFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            mAdapter = new ChannelInfoAdapter(recyclerView, mChannels, mListener);
-            recyclerView.setAdapter(mAdapter);
+            mRecyclerView = (RecyclerView) view;
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mAdapter = new ChannelInfoAdapter(mRecyclerView, mChannels, mListener);
+            mRecyclerView.setAdapter(mAdapter);
+            if (mInitialSelection >= 0) {
+                doSelectItem();
+            }
         }
         return view;
     }

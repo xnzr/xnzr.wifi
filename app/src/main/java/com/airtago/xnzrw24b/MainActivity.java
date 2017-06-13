@@ -27,6 +27,29 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
     private LevelCalculator mLevelCalculator;
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Saving current state
+        outState.putInt("ch", curChan);
+        if (networksFragment.getNetworks().size() > 0) {
+            outState.putInt("nets", networksFragment.getNetworks().size());
+            int index = 0;
+            for (NetworkInfo network : networksFragment.getNetworks()) {
+                Bundle netBundle = new Bundle();
+                network.serialize(netBundle);
+                outState.putBundle("net" + index++, netBundle);
+            }
+        }
+        if (mSelectedNetwork != null) {
+            outState.putString("sel_mac", mSelectedNetwork.Mac);
+            outState.putString("sel_ssid", mSelectedNetwork.Ssid);
+            if (mSelectedChannel > 0) {
+                outState.putInt("sel_chan", mSelectedChannel);
+            }
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -46,7 +69,6 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
 
         handler = new android.os.Handler() {
             public void handleMessage(android.os.Message msg) {
-                //mCameraFragmentInterface.setLevel(-84);
                 if (msg.what == MessageFields.CODE_DATA) {
                     Log.d(TAG, "ant=" + msg.getData().getInt(MessageFields.FIELD_ANT_INT) + " ch=" + msg.getData().getInt(MessageFields.FIELD_CH_INT) + " ssid=" +msg.getData().getString(MessageFields.FIELD_SSID_STR) + " mac=" + msg.getData().getString(MessageFields.FIELD_MAC_STR) + " rssi=" + msg.getData().getDouble(MessageFields.FIELD_RSSI_DOUBLE));
                     try {
@@ -66,7 +88,26 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
                 }
             };
         };
-        //handler.sendMessageDelayed(handler.obtainMessage(999), 3000);
+
+        if (savedInstanceState != null) {
+            curChan = savedInstanceState.getInt("ch", 0);
+            int count = savedInstanceState.getInt("nets", 0);
+            String selMac = savedInstanceState.getString("sel_mac", "");
+            String selSsid = savedInstanceState.getString("sel_ssid", "");
+            mSelectedNetwork = null;
+            for (int i = 0; i < count; ++i) {
+                NetworkInfo netInfo = new NetworkInfo();
+                netInfo.deserialize(savedInstanceState.getBundle("net" + i));
+                networksFragment.addNetwork(netInfo);
+                if (mSelectedNetwork == null && netInfo.Mac == selMac && netInfo.Ssid == selSsid) {
+                    mSelectedNetwork = netInfo;
+                    networksFragment.selectNetwork(mSelectedNetwork);
+                    mChannelsFragment.setNetwork(netInfo);
+                }
+            }
+            mSelectedChannel = savedInstanceState.getInt("sel_chan", 0);
+            mChannelsFragment.selectChannel(mSelectedChannel);
+        }
     }
 
     private android.os.Handler handler;
@@ -165,8 +206,15 @@ public class MainActivity extends Activity implements NetworkInfoFragment.OnList
                     changer.interrupt();
                 }
 
-                changer = createChangerThread();
-                changer.start();
+                if (mSelectedNetwork != null && mSelectedChannel > 0) {
+                    //Has selected network and channel: changing to scan on a single channel
+                    mLevelCalculator = new LevelCalculator(mSelectedNetwork.Ssid, mSelectedNetwork.Mac);
+                    changeChannel(mSelectedChannel);
+                } else {
+                    //No selected network and channel: starting lookup mode
+                    changer = createChangerThread();
+                    changer.start();
+                }
 
             } catch (DeviceNotFoundException e) {
                 sendError("Device was not found");

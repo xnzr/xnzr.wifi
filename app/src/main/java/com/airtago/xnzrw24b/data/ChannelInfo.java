@@ -1,7 +1,11 @@
 package com.airtago.xnzrw24b.data;
 
+import android.os.Bundle;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Created by alexe on 10.01.2017.
@@ -51,5 +55,34 @@ public final class ChannelInfo {
             r += d;
         }
         return mHistory2.size() > 0 ? r / mHistory2.size() : -0d;
+    }
+
+    private double[] convertDoubles(ArrayList<Double> doubles) {
+        double[] ret = new double[doubles.size()];
+        Iterator<Double> iterator = doubles.iterator();
+        int i = 0;
+        while(iterator.hasNext()) {
+            ret[i++] = iterator.next();
+        }
+        return ret;
+    }
+
+    private void convertToDoubles(ArrayList<Double> list, double[] values) {
+        list.clear();
+        for (int i = 0; i < values.length; ++i) {
+            list.add(values[i]);
+        }
+    }
+
+    public void serialize(Bundle bundle) {
+        bundle.putInt("channel", Channel);
+        bundle.putDoubleArray("h1", convertDoubles(mHistory1));
+        bundle.putDoubleArray("h2", convertDoubles(mHistory2));
+    }
+
+    public void deserialize(Bundle bundle) {
+        Channel = bundle.getInt("channel");
+        convertToDoubles(mHistory1, bundle.getDoubleArray("h1"));
+        convertToDoubles(mHistory2, bundle.getDoubleArray("h2"));
     }
 }

@@ -7,7 +7,7 @@ android {
         applicationId "com.airtago.xnzrw24b"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 7
+        versionCode 8
         versionName "1.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-$versionName")

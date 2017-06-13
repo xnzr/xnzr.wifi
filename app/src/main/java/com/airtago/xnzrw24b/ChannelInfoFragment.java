@@ -37,6 +37,7 @@ public class ChannelInfoFragment extends Fragment {
     private ChannelInfoAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private int mInitialSelection;
+    private NetworkInfo mNetwork;
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
@@ -49,11 +50,12 @@ public class ChannelInfoFragment extends Fragment {
     }
 
     public void setNetwork(NetworkInfo info) {
+        mNetwork = info;
         if (mAdapter != null) {
             mAdapter.clearSelection();
         }
         mChannels.clear();
-        for (ChannelInfo chan: info.Channels) {
+        for (ChannelInfo chan: mNetwork.Channels) {
             mChannels.add(chan);
         }
         if (mAdapter != null) {
@@ -61,7 +63,7 @@ public class ChannelInfoFragment extends Fragment {
         }
     }
 
-        public void selectChannel(int channel) {
+    public void selectChannel(int channel) {
         for (int i = 0; i < mChannels.size(); ++i) {
             if (mChannels.get(i).Channel == channel) {
                 mInitialSelection = i;
@@ -87,12 +89,25 @@ public class ChannelInfoFragment extends Fragment {
     }
 
     public void addInfo(WFPacket packet) {
+        boolean found = false;
         for (int i = 0; i < mChannels.size(); ++i) {
             if (mChannels.get(i).Channel == packet.wifiCh) {
                 mAdapter.notifyItemChanged(i);
+                found = true;
                 break;
             }
         }
+        if (!found) {
+            for (ChannelInfo chan: mNetwork.Channels) {
+                if (mChannels.indexOf(chan) < 0) {
+                    mChannels.add(chan);
+                }
+            }
+            if (mAdapter != null) {
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+
 //        NetworkInfo networkInfo = null;
 //        for (NetworkInfo netInfo: networks) {
 //            if (netInfo.Ssid.equals(packet.apName) && netInfo.Mac.equals(packet.mac)) {

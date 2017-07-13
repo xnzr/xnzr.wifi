@@ -17,27 +17,31 @@ public class WFPacket {
     private final String delimeters = "[ ]+";
 
 
-    public WFPacket( String str ) throws WFParseException {
+    public WFPacket(String str) throws WFParseException {
         String[] tokens = str.split(delimeters);
 
         if ( tokens.length < 6 ) {
             throw new WFParseException( "Have " + tokens.length + " tokens in string '" + str + "'" );
         }
 
-        antIdx = Integer.parseInt(tokens[0], 10) - 1;
-        wifiCh = Integer.parseInt(tokens[1], 10);
-        mac = tokens[2];
-        time = Long.parseLong(tokens[3], 16);
-        power  = Double.parseDouble(tokens[4]);
+        try {
+            antIdx = Integer.parseInt(tokens[0], 10) - 1;
+            wifiCh = Integer.parseInt(tokens[1], 10);
+            mac = tokens[2];
+            time = Long.parseLong(tokens[3], 16);
+            power = Double.parseDouble(tokens[4]);
 
-        for ( int i = 5; i < tokens.length; i++ ) {
-            apName += tokens[i];
-            if ( i != tokens.length - 1 ) {
-                apName += " ";
+            for (int i = 5; i < tokens.length; i++) {
+                apName += tokens[i];
+                if (i != tokens.length - 1) {
+                    apName += " ";
+                }
             }
-        }
 
-        raw = str;
+            raw = str;
+        } catch (Exception ex) {
+            throw new WFParseException("Parce exception in string '" + str + "'", ex);
+        }
     }
 
     public String toString() {

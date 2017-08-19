@@ -51,6 +51,7 @@ public class UsbSerialPortTi {
         if ( connection != null ) {
             connection.releaseInterface(usbInterface);
             connection.close();
+            connection = null;
         }
     }
 
@@ -167,6 +168,9 @@ public class UsbSerialPortTi {
     }
 
     public int write(byte[] src, int timeoutMillis) throws IOException {
+        if (connection == null)
+            return -1;
+
         int offset = 0;
 
         while (offset < src.length) {
